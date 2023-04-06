@@ -4,7 +4,6 @@ from tkinter import ttk
 from tkinter import filedialog
 import win32com.client as win32
 
-row_int = 1
 column_int = 2
 
 def write_text_to_excel(workbook, sheet_name, title, text, start_row, start_column):
@@ -24,7 +23,7 @@ def write_text_to_excel(workbook, sheet_name, title, text, start_row, start_colu
     
     # IDの値を追加
     for n in range(0,len(text_list)):
-        sheet.cell(row=id_title_cell.row + n + 1, column=1, value=n)
+        sheet.cell(row=id_title_cell.row + n + start_row, column=1, value=n)
 
     # タイトルセルを書き込み
     title_cell = sheet.cell(row=start_row, column=start_column, value=title)
@@ -41,7 +40,8 @@ def write_to_excel():
     sheet_name = sheet_name_entry.get()
     title = title_entry.get()
     text = text_entry.get("1.0", tk.END)
-    start_row = int(start_row_entry.get())
+    #start_row = int(start_row_entry.get())
+    start_row = 1
     start_column = int(start_column_entry.get())
     if(start_row < 1):
         start_row = 1
@@ -68,20 +68,6 @@ def write_to_excel():
     # 既存のファイルを指定して開く
     workbook = excel.Workbooks.Open(file_path)
     
-
-def row_add_value():
-    #列行の値加算処理
-    global row_int
-    row_int += 1
-    start_row_var.set(row_int)
-    
-def row_subtract_value():
-    #列行の値加算処理
-    global row_int
-    if(row_int == 1):
-        return
-    row_int -= 1
-    start_row_var.set(row_int)
     
 def column_add_value():
     #列行の値加算処理
@@ -100,7 +86,7 @@ def column_subtract_value():
 # GUIアプリの作成
 root = tk.Tk()
 root.title("Iton Excel")
-root.geometry("400x600")
+root.geometry("400x550")
 
 # 入力項目の作成
 file_path_label = ttk.Label(root, text="Excel file path")
@@ -113,10 +99,6 @@ text_label = ttk.Label(root, text="Sentence")
 text_entry_var = tk.StringVar()
 text_entry = tk.Text(root)
 #エントリーに文字の描画
-start_row_label = ttk.Label(root, text="開始行番号")
-start_row_var = tk.StringVar()
-start_row_var.set(row_int)
-start_row_entry = ttk.Entry(root, textvariable=start_row_var)
 
 start_column_label = ttk.Label(root, text="開始列番号")
 start_column_var = tk.StringVar()
@@ -129,8 +111,6 @@ status_label = tk.Label(root, text="")
 # ボタンの作成
 file_select_button = ttk.Button(root, text="Excelファイルを選択", command=lambda: file_path_entry.insert(tk.END, filedialog.askopenfilename()))
 write_button = ttk.Button(root, text="Excelに書き込む", command=write_to_excel)
-row_set_add_button = ttk.Button(root, text="+", command=row_add_value)
-row_set_subtract_button = ttk.Button(root, text="-", command=row_subtract_value)
 column_set_add_button = ttk.Button(root, text="+", command=column_add_value)
 column_set_subtract_button = ttk.Button(root, text="-", command=column_subtract_value)
 
@@ -148,17 +128,12 @@ title_entry.place(x=180, y=150, width=170, height=25)
 text_label.place(x=88, y=205)
 text_entry.place(x=180, y=200, width=170, height=200)
 
-start_row_label.place(x=90, y=425)
-row_set_subtract_button.place(x=180, y=420, width=20, height=20)
-start_row_entry.place(x=240, y=420, width=20, height=20)
-row_set_add_button.place(x=300, y=420, width=20, height=20)
+start_column_label.place(x=90, y=425)
+column_set_subtract_button.place(x=180, y=420, width=20, height=20)
+start_column_entry.place(x=240, y=420, width=20, height=20)
+column_set_add_button.place(x=300, y=420, width=20, height=20)
+write_button.place(x=150, y=480)
 
-start_column_label.place(x=90, y=475)
-column_set_subtract_button.place(x=180, y=470, width=20, height=20)
-start_column_entry.place(x=240, y=470, width=20, height=20)
-column_set_add_button.place(x=300, y=470, width=20, height=20)
-write_button.place(x=150, y=515)
-
-status_label.place(x=280, y=570)
+status_label.place(x=280, y=510)
 
 root.mainloop()
