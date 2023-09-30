@@ -1,3 +1,4 @@
+import os
 import openpyxl
 import tkinter as tk
 from tkinter import ttk
@@ -6,10 +7,26 @@ import win32com.client as win32
 
 column_int = 2
 
-def write_text_to_excel(workbook, sheet_name, title, text, start_row, start_column):
+# コマンドプロンプトを非表示に
+def hide_console():
+    # Windowsのコマンドプロンプトを非表示にする
+    if os.name == 'nt':
+        try:
+            hwnd = win32.GetConsoleWindow()
+            win32.ShowWindow(hwnd, 0)
+        except Exception:
+            pass
+
+hide_console()
+
+def write_text_to_excel(workbook, sheet_name, title, text, delimiter, start_row, start_column):
     # 改行文字("\n")で文章を分割
+    if delimiter != "": 
+        text = delimiter + delimiter.join(text)
     text_list = text.split("\n")
-    while text_list and not text_list[-1].strip():
+
+    # 意図していない空文字の改行分を削除
+    while text_list and (not text_list[-1].strip() or text_list[-1] == delimiter):
         text_list.pop()
 
     # Sheetを選択
@@ -32,6 +49,7 @@ def write_text_to_excel(workbook, sheet_name, title, text, start_row, start_colu
     for i, t in enumerate(text_list):
         sheet.cell(row=title_cell.row+i+1, column=start_column, value=t)
 
+
 def write_to_excel():
     # Excelのインスタンスを作成 
     excel = win32.gencache.EnsureDispatch('Excel.Application')
@@ -40,6 +58,8 @@ def write_to_excel():
     sheet_name = sheet_name_entry.get()
     title = title_entry.get()
     text = text_entry.get("1.0", tk.END)
+    delimiter = delimiter_entry.get()
+    
     #start_row = int(start_row_entry.get())
     start_row = 1
     start_column = int(start_column_entry.get())
@@ -47,6 +67,7 @@ def write_to_excel():
         start_row = 1
     if(start_column < 2):
         start_column = 2
+
     # Excelファイルを開く
     try:
         file_path = file_path_entry.get()
@@ -55,7 +76,7 @@ def write_to_excel():
         status_label.config(text="Task failed.")
 
     # Excelに文章を書き込み
-    write_text_to_excel(workbook, sheet_name, title, text, start_row, start_column)
+    write_text_to_excel(workbook, sheet_name, title, text, delimiter, start_row, start_column)
 
     # Excelファイルを保存
     workbook.save(file_path)
@@ -91,13 +112,19 @@ root.geometry("400x550")
 # 入力項目の作成
 file_path_label = ttk.Label(root, text="Excel file path")
 file_path_entry = ttk.Entry(root)
+
 sheet_name_label = ttk.Label(root, text="Sheet name")
 sheet_name_entry = ttk.Entry(root)
+
 title_label = ttk.Label(root, text="Label")
 title_entry = ttk.Entry(root)
+
 text_label = ttk.Label(root, text="Sentence")
 text_entry_var = tk.StringVar()
 text_entry = tk.Text(root)
+
+delimiter_label = ttk.Label(root, text="Delimiter")
+delimiter_entry = ttk.Entry(root)
 #エントリーに文字の描画
 
 start_column_label = ttk.Label(root, text="開始列番号")
@@ -128,12 +155,15 @@ title_entry.place(x=180, y=150, width=170, height=25)
 text_label.place(x=88, y=205)
 text_entry.place(x=180, y=200, width=170, height=200)
 
-start_column_label.place(x=90, y=425)
-column_set_subtract_button.place(x=180, y=420, width=20, height=20)
-start_column_entry.place(x=240, y=420, width=20, height=20)
-column_set_add_button.place(x=300, y=420, width=20, height=20)
-write_button.place(x=150, y=480)
+delimiter_label.place(x=95, y=425)
+delimiter_entry.place(x=180, y=425, width=20, height=20)
 
-status_label.place(x=280, y=510)
+start_column_label.place(x=90, y=465)
+column_set_subtract_button.place(x=180, y=465, width=20, height=20)
+start_column_entry.place(x=240, y=465, width=20, height=20)
+column_set_add_button.place(x=300, y=465, width=20, height=20)
+write_button.place(x=150, y=505)
+
+status_label.place(x=280, y=505)
 
 root.mainloop()
