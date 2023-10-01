@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import win32com.client as win32
+import re
 
 column_int = 2
 
@@ -19,11 +20,21 @@ def hide_console():
 
 hide_console()
 
-def write_text_to_excel(workbook, sheet_name, title, text, delimiter, start_row, start_column):
+def write_text_to_excel(workbook, sheet_name, title, text, delimiter, cellChangeCode, start_row, start_column):
+    print(text)
     # 改行文字("\n")で文章を分割
     if delimiter != "": 
         text = delimiter + delimiter.join(text)
-    text_list = text.split("\n")
+        
+    # cellChangeCodeが指定されている場合区切りはそれに従う。
+    if(cellChangeCode == ""):
+        text_list = text.split("\n")
+    else:
+        # 改行コードを'\n'に置換
+        text = text.replace("\n", "\\n")
+        text_list = text.split(cellChangeCode)
+        text_list = [item.rstrip("\\n") for item in text_list]
+        
 
     # 意図していない空文字の改行分を削除
     while text_list and (not text_list[-1].strip() or text_list[-1] == delimiter):
@@ -59,6 +70,7 @@ def write_to_excel():
     title = title_entry.get()
     text = text_entry.get("1.0", tk.END)
     delimiter = delimiter_entry.get()
+    cellChangeCode = cellChange_entry.get()
     
     #start_row = int(start_row_entry.get())
     start_row = 1
@@ -76,7 +88,7 @@ def write_to_excel():
         status_label.config(text="Task failed.")
 
     # Excelに文章を書き込み
-    write_text_to_excel(workbook, sheet_name, title, text, delimiter, start_row, start_column)
+    write_text_to_excel(workbook, sheet_name, title, text, delimiter, cellChangeCode, start_row, start_column)
 
     # Excelファイルを保存
     workbook.save(file_path)
@@ -107,7 +119,7 @@ def column_subtract_value():
 # GUIアプリの作成
 root = tk.Tk()
 root.title("Iton Excel")
-root.geometry("400x550")
+root.geometry("400x590")
 
 # 入力項目の作成
 file_path_label = ttk.Label(root, text="Excel file path")
@@ -125,6 +137,9 @@ text_entry = tk.Text(root)
 
 delimiter_label = ttk.Label(root, text="Delimiter")
 delimiter_entry = ttk.Entry(root)
+
+cellChange_label = ttk.Label(root, text="Cell change code")
+cellChange_entry = ttk.Entry(root)
 #エントリーに文字の描画
 
 start_column_label = ttk.Label(root, text="開始列番号")
@@ -158,12 +173,15 @@ text_entry.place(x=180, y=200, width=170, height=200)
 delimiter_label.place(x=95, y=425)
 delimiter_entry.place(x=180, y=425, width=20, height=20)
 
-start_column_label.place(x=90, y=465)
-column_set_subtract_button.place(x=180, y=465, width=20, height=20)
-start_column_entry.place(x=240, y=465, width=20, height=20)
-column_set_add_button.place(x=300, y=465, width=20, height=20)
-write_button.place(x=150, y=505)
+cellChange_label.place(x=68, y=465)
+cellChange_entry.place(x=180, y=465, width=20, height=20)
 
-status_label.place(x=280, y=505)
+start_column_label.place(x=90, y=505)
+column_set_subtract_button.place(x=180, y=505, width=20, height=20)
+start_column_entry.place(x=240, y=505, width=20, height=20)
+column_set_add_button.place(x=300, y=505, width=20, height=20)
+write_button.place(x=150, y=545)
+
+status_label.place(x=280, y=545)
 
 root.mainloop()
